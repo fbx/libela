@@ -1,0 +1,186 @@
+
+@include template.mkdoc
+
+@moduledef{User API}
+ @short Client code API
+ @order 105
+@end moduledef
+
+@moduledef{Backend API}
+ @short Event loop adapter
+ @order 104
+@end moduledef
+
+@moduledef{Backends}
+ @short Backend-specific calls
+ @order 104
+@end moduledef
+
+@insert title
+
+@c
+@c Plain Documentation
+@c
+
+@section HT {Purpose}
+
+   There are many existing event loops.  Each framework creates its
+   own, this is understandable (language, coding style, datatypes).
+   We can name some event loops: @tt glib (under @tt gtk), @tt
+   CFRunLoop (in @tt CoreFoundation, under @tt Cocoa), @tt
+   QCoreApplication (in Qt), @tt libevent, etc..
+
+   An utility library agnostic to one particular toolkit must ensure
+   adaptability.  This library aims to provide an uniform event loop
+   API for such utility libraries.
+
+   As libraries may exist once in a system and yet get linked to
+   different programs, adaptation must been done at
+   runtime. Therefore, @tt libela provides the said adaptation layer
+   through some opaque structures and runtime function dispatch.
+
+@end section
+
+@insert toc
+
+@section HTP {Usage}
+@section {Conceptual}
+
+   An event loop is an utility objects that handles file descriptor
+   availability and timers.  It calls registered functions either:
+   @list
+     @item input data is available on a file descriptor,
+     @item output queue of a file descriptor is not full any more,
+     @item a timer expires.
+   @end list
+
+   In @tt libela, client (user) code registers @tt sources, and each
+   @tt source can monitor:
+   @list
+     @item at most one file descriptor (file, socket, etc.),
+     @item a timeout for file descriptor activity.
+   @end list
+
+   A pure timer can be created by not setting a file descriptor to a
+   source, a file descriptor source can be set without a timer.
+
+   Each source can register exactly one callback function.
+
+@end section
+
+@section {User API}
+
+   @section {Event loop usage}
+
+     Client code has to create an ELA context either calling @ref
+     ela_create, which will create an event loop with the first
+     available backend, or by explicitely calling an event loop
+     wrapper constructor like @ref ela_libevent.
+  
+     After successful initialization, user may create and populate
+     sources, and control the running event loop.
+
+   @end section
+
+   @section {Source usage}
+
+     As each backend needs its own source structures, Sources must be
+     allocated and deleted through @ref ela_source_alloc and @ref
+     ela_source_free.
+
+     Callback function and its private data are registered on source
+     creation. They cannot be changed dynamically.
+
+     A source may watch a file descriptor through @ref
+     ela_set_fd. Timeout can be set through @ref ela_set_timeout.
+     Timeout is reset on each activity on the file descriptor, if
+     relevant.
+
+     A source is only actually watched for when it is added to the
+     event loop through @ref ela_add. It may be removed with @ref
+     ela_remove.  Dandling event source are harmless.
+
+     When they fire, event sources stay registered to the event loop
+     by default. They are automatically removed if user passes @ref
+     #ELA_EVENT_ONCE as flag to either @ref ela_set_fd or @ref
+     ela_set_timeout.
+
+   @end section
+
+   @section {Event loop life cycle}
+
+     User may use ela-provided wrappers to run the event loop with
+     @ref ela_run. In case the backend is known (or wrapped in another
+     library), the mainloop handling can be done from another control
+     path than ela's (like @tt {gtk_main()} or @tt
+     {QApplication::exec()}).
+
+     Anytime, user may want to exit the event loop. This can be done
+     with @ref ela_exit.
+
+     Once the user is done with ela and all the sources have
+     explicitely been freed, user may call @ref ela_close.
+
+   @end section
+
+@end section
+
+@section {Backends implementation}
+
+   Ela backends must implement all callbacks defined in @ref
+   ela_el_backend, and must implment a constructor method returning a
+   pointer to an @ref ela_el structure.  This structure may be
+   inherited in order to add private data to the context, but must
+   contain the base @ref ela_el strucure provided in this header for
+   the standard ela calls to work.
+
+   Backends are free to define their own @ref ela_event_source
+   structures. The API does not define anything for them.
+
+@end section
+@end section
+
+@section HTP {Modules & Headers}
+
+  @section {Modules}
+    @insert {module} compound_table
+  @end section
+
+  @section {Headers}
+    @insert {header} compound_table
+  @end section
+
+  @insert {module} all_compound_sections
+  @insert {header} all_compound_sections
+
+@end section
+
+@section HTP {Examples}
+  An event loop may be explicitely created or allocated from the first
+  available event loop backend.  For instance, a code taking the
+  backend name from the command line can be:
+
+  @example timeout.c:creation
+
+  Once created, the event loop may be used to create event sources
+  referencing an existing callback function:
+
+  @example timeout.c:source_creation
+
+  Then a timeout may be set on the source:
+  
+  @example timeout.c:source_timeout
+
+  The source may monitor a file descriptor as well:
+  
+  @example fd.c:source_fd
+
+  Once all setup is done, source may be added to the loop:
+  
+  @example timeout.c:source_add
+
+  Finally, cleanup code:
+  
+  @example timeout.c:cleanup
+  
+@end section

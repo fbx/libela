@@ -1,0 +1,9 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+Name: ela
+Description: Event loop abstraction library
+Version: @VERSION@
+Libs: -L${libdir} -lela @LIBEVENT_LIBS@
+Cflags: -I${includedir}
