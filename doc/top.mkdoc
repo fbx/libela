@@ -175,6 +175,10 @@
   
   @example fd.c:source_fd
 
+  A source callback function may filter incoming events:
+  
+  @example timeout.c:callback
+
   Once all setup is done, source may be added to the loop:
   
   @example timeout.c:source_add
