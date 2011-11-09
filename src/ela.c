@@ -106,7 +106,7 @@ void ela_source_free(
 
 static const struct ela_el_backend *registry[REGISTRY_SIZE] = {0};
 
-void ela_regsiter(const struct ela_el_backend *backend)
+void ela_register(const struct ela_el_backend *backend)
 {
     size_t i;
 

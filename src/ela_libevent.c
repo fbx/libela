@@ -244,5 +244,5 @@ struct ela_el *ela_libevent(struct event_base *event)
 __attribute__((constructor))
 static void _ela_event_register(void)
 {
-    ela_regsiter(&event_backend);
+    ela_register(&event_backend);
 }

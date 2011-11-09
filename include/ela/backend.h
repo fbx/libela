@@ -104,6 +104,6 @@ struct ela_el
    @param backend The backend to register
  */
 ELA_EXPORT
-void ela_regsiter(const struct ela_el_backend *backend);
+void ela_register(const struct ela_el_backend *backend);
 
 #endif

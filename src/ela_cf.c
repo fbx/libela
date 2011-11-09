@@ -396,7 +396,7 @@ struct ela_el *ela_cf(CFRunLoopRef runloop)
 __attribute__((constructor))
 static void _ela_cf_register(void)
 {
-    ela_regsiter(&backend);
+    ela_register(&backend);
 }
 
 CFRunLoopRef ela_cf_get_runloop(struct ela_el *ela)
