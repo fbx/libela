@@ -53,24 +53,11 @@ AC_ARG_WITH([libevent],
             [],
             [with_libevent=check])
 
-LIBEVENT_LIBS=""
-if test x"$with_libevent" = x"no" ; then
-   have_libevent=no
-else
-   AC_CHECK_HEADERS(event.h, [
-                    have_event_h="yes"
-                    ])
-   AC_CHECK_LIB(event, event_set, [
-                have_libevent="$have_event_h"
-                LIBEVENT_LIBS="-levent"
-                ])
-fi
-
-if test "x$have_libevent" = "xyes" ; then
-   AC_DEFINE(HAVE_EVENT_H)
-   AC_SUBST(LIBEVENT_LIBS)
-fi
-AM_CONDITIONAL(HAVE_LIBEVENT, test "x$have_libevent" = "xyes")
+AM_CONDITIONAL(HAVE_LIBEVENT, false)
+PKG_CHECK_MODULES(LIBEVENT, libevent,
+                  [AC_DEFINE([HAVE_LIBEVENT], [1], [Has libevent])
+                   AM_CONDITIONAL(HAVE_LIBEVENT, true)],
+                  [AS_IF([test "x$with_libevent" = xyes], AC_ERROR(No libevent support))])
 
 AX_CHECK_LINK_FLAG([-framework CoreFoundation],
                    [target_is_apple=1],
