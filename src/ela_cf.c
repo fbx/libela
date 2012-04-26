@@ -399,6 +399,7 @@ static void _ela_cf_register(void)
     ela_register(&backend);
 }
 
+ELA_EXPORT
 CFRunLoopRef ela_cf_get_runloop(struct ela_el *ela)
 {
     struct cf_mainloop *ctx = (struct cf_mainloop *)ela;
