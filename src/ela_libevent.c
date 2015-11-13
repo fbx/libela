@@ -186,9 +186,9 @@ ela_error_t _ela_source_alloc(
 
     src->priv = priv;
     src->handler = func;
-    event_base_set(ctx->event, &src->event);
     src->flags = 0;
     event_set(&src->event, -1, EV_PERSIST, _ela_event_cb, src);
+    event_base_set(ctx->event, &src->event);
 
     *source = src;
     return 0;
