@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if 1
+#if 0
 # define DBG(a, ...) printf(a, __VA_ARGS__)
 #else
 # define DBG(a, ...) do{}while(0)
