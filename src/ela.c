@@ -15,10 +15,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#if 0
-# define DBG(a...) printf(a)
+#if 1
+# define DBG(a, ...) printf(a, __VA_ARGS__)
 #else
-# define DBG(a...) do{}while(0)
+# define DBG(a, ...) do{}while(0)
 #endif
 
 ela_error_t ela_set_fd(

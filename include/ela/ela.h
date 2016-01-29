@@ -20,12 +20,17 @@
  */
 
 #include <stdint.h>
-#include <sys/time.h>
+
+#if !defined(_MSC_VER)
+# include <sys/time.h>
+#endif
 
 /* GCC visibility */
 #if defined(__GNUC__) && __GNUC__ >= 4 /** mkdoc:skip */
 /** @internal */
 # define ELA_EXPORT __attribute__ ((visibility("default")))
+#elif defined(_MSC_VER) /** mkdoc:skip */
+# define ELA_EXPORT __declspec(dllexport)
 #else
 /** @internal */
 # define ELA_EXPORT
