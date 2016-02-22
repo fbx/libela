@@ -23,20 +23,10 @@
 
 #include <event.h>
 
-#ifdef _MSC_VER
-
-#pragma section(".CRT$XCU", read)
-#define INITIALIZER(f) \
-    static void __cdecl f(void); \
-    __declspec(allocate(".CRT$XCU")) void(__cdecl* f##_)(void) = f; \
-    static void __cdecl f(void)
-
-#elif defined(__GNUC__)
-
+#if defined(__GNUC__)
 #define INITIALIZER(f) \
     static void f(void) __attribute__((constructor)); \
     static void f(void)
-
 #endif
 
 struct libevent_mainloop
@@ -176,14 +166,14 @@ static
 void _ela_event_run(struct ela_el *ctx_)
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;
-	event_base_dispatch(ctx->event);
+    event_base_dispatch(ctx->event);
 }
 
 static
 void _ela_event_exit(struct ela_el *ctx_)
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;
-	event_base_loopbreak(ctx->event);
+    event_base_loopbreak(ctx->event);
 }
 
 static
@@ -256,7 +246,26 @@ struct ela_el *ela_libevent(struct event_base *event)
     return &m->base;
 }
 
+#if defined(_MSC_VER)
+BOOLEAN WINAPI
+DllMain(IN HINSTANCE hDllHandle, IN DWORD nReason, IN LPVOID Reserved)
+{
+    switch (nReason) {
+    case DLL_PROCESS_ATTACH:
+        //DisableThreadLibraryCalls(hDllHandle);
+        ela_register(&event_backend);
+        break;
+    case DLL_PROCESS_DETACH:
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
+    }
+
+    return TRUE;
+}
+#else
 INITIALIZER(_ela_event_register)
 {
     ela_register(&event_backend);
 }
+#endif
