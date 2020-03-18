@@ -27,6 +27,7 @@ struct event_base;
 
    @returns an event loop, or NULL if libevent support is unavailable.
  */
+ELA_EXPORT
 struct ela_el *ela_libevent(struct event_base *event);
 
 #endif

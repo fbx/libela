@@ -23,6 +23,12 @@
 
 #include <event.h>
 
+#if defined(__GNUC__)
+#define INITIALIZER(f) \
+    static void f(void) __attribute__((constructor)); \
+    static void f(void)
+#endif
+
 struct libevent_mainloop
 {
     struct ela_el base;
@@ -79,6 +85,8 @@ ela_error_t _ela_event_set_fd(
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;
     ela_error_t err = 0;
+    uint32_t fd_flags
+        = (ELA_EVENT_ONCE|ELA_EVENT_READABLE|ELA_EVENT_WRITABLE);
 
     (void)ctx;
 
@@ -87,9 +95,6 @@ ela_error_t _ela_event_set_fd(
     if ( ela_flags & ELA_EVENT_ONCE ) ev_flags &= ~EV_PERSIST;
     if ( ela_flags & ELA_EVENT_READABLE ) ev_flags |= EV_READ;
     if ( ela_flags & ELA_EVENT_WRITABLE ) ev_flags |= EV_WRITE;
-
-    const uint32_t fd_flags
-        = (ELA_EVENT_ONCE|ELA_EVENT_READABLE|ELA_EVENT_WRITABLE);
 
     src->flags = (src->flags & ~fd_flags) | (ela_flags & fd_flags);
 
@@ -161,14 +166,14 @@ static
 void _ela_event_run(struct ela_el *ctx_)
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;
-	event_base_dispatch(ctx->event);
+    event_base_dispatch(ctx->event);
 }
 
 static
 void _ela_event_exit(struct ela_el *ctx_)
 {
     struct libevent_mainloop *ctx = (struct libevent_mainloop *)ctx_;
-	event_base_loopbreak(ctx->event);
+    event_base_loopbreak(ctx->event);
 }
 
 static
@@ -241,8 +246,26 @@ struct ela_el *ela_libevent(struct event_base *event)
     return &m->base;
 }
 
-__attribute__((constructor))
-static void _ela_event_register(void)
+#if defined(_MSC_VER)
+BOOLEAN WINAPI
+DllMain(IN HINSTANCE hDllHandle, IN DWORD nReason, IN LPVOID Reserved)
+{
+    switch (nReason) {
+    case DLL_PROCESS_ATTACH:
+        //DisableThreadLibraryCalls(hDllHandle);
+        ela_register(&event_backend);
+        break;
+    case DLL_PROCESS_DETACH:
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
+    }
+
+    return TRUE;
+}
+#else
+INITIALIZER(_ela_event_register)
 {
     ela_register(&event_backend);
 }
+#endif
