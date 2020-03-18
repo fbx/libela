@@ -30,6 +30,7 @@
 
 static  struct ela_el *el = NULL;
 
+static
 int set_nonblocking(int fd)
 {
 #if defined(O_NONBLOCK)
